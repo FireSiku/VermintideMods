@@ -56,13 +56,36 @@ Mods.hook.set(mod_name, "BTConditions.can_loot_pinged_item", function (func, bla
 	if blackboard.unit == nil then
 		return false
 	end
+	
+	local inventory_extn = blackboard.inventory_extension
+	local is_bot = inventory_extn.player.bot_player
 
-	local self_unit = blackboard.unit
-    
-    if pinged_ammo then
-        EchoConsole("Pinged Ammo Hook")
-        blackboard.interaction_unit = pinged_ammo
-        return true
+	if pinged_ammo and inventory_extn then
+		local curr_ammo, max_ammo = current_ammo_status(inventory_extn, is_bot)
+		
+		local player_near_ammo = false
+		local players_full_ammo = true
+		local ammo_position = POSITION_LOOKUP[pinged_ammo]
+		for id, player in pairs(Managers.player:human_players()) do
+			if ammo_position and player.player_unit and (3.5 > Vector3.distance(POSITION_LOOKUP[player.player_unit], ammo_position)) then
+				player_near_ammo = true
+			end
+			-- Only let bots loot small ammo if all players are full.
+			if players_full_ammo then
+				local player_inventory_ext = ScriptUnit.extension(player.player_unit, "inventory_system")
+				local player_ammo, player_max = current_ammo_status(player_inventory_ext, false)
+				if player_ammo < player_max then 
+					players_full_ammo = false 
+				end
+			end
+		end
+
+		--if local player_inventory_ext = ScriptUnit.extension(player.player_unit, "inventory_system")
+
+		if is_bot and player_near_ammo and curr_ammo < max_ammo then
+			blackboard.interaction_unit = pinged_ammo
+			return true
+		end
     end
 
     return func(blackboard)
