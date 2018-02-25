@@ -164,12 +164,13 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 			return false
 		end
 	end
-
+	
 	if pinged_ammo then -- Ammo Crates
 		local player_near_ammo = false
 		local players_full_ammo = true
 		for id, player in pairs(Managers.player:human_players()) do
-			if player and 3.5 > distance_from_object(player.player_unit, pinged_ammo) then
+			local distance = distance_from_object(player.player_unit, pinged_ammo)
+			if player and distance and 3.5 > distance then
 				player_near_ammo = true
 			end
 		end
@@ -181,8 +182,9 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 		if unit_has_full_ammo(self_unit) then
 			return false
 		end
-
-		if 5.5 < distance_from_object(self_unit, pinged_ammo) then 
+		
+		local distance = distance_from_object(self_unit, pinged_ammo)
+		if distance and distance > 5.5 then 
 			return false 
 		end
 
@@ -209,7 +211,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 		end
 
 		local distance = distance_from_object(self_unit, pinged_ammo_small)
-		if distance and (distance and distance > 5.5) then
+		if distance and distance > 5.5 then
 			return false 
 		end
 
