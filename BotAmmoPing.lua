@@ -127,12 +127,17 @@ local function current_ammo_status(player_unit)
 	return nil, nil
 end
 
-local function distance_from_object(player_unit, object)
+local function object_within_reach(player_unit, object, distance)
 	local player_pos = POSITION_LOOKUP[player_unit]
 	local object_pos = POSITION_LOOKUP[object]
 	if player_pos and object_pos then
-		return Vector3.distance(player_pos, object_pos)
+		local object_dist = Vector3.distance(player_pos, object_pos)
+		if distance and distance < object_dist then
+			return true
 	end
+end
+
+	return false
 end
 
 local function unit_has_full_ammo(player_unit)
@@ -169,8 +174,9 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 		local player_near_ammo = false
 		local players_full_ammo = true
 		for id, player in pairs(Managers.player:human_players()) do
-			local distance = distance_from_object(player.player_unit, pinged_ammo)
-			if player and distance and 3.5 > distance then
+			--local distance = distance_from_object(player.player_unit, pinged_ammo)
+			--if player and distance and 3.5 > distance then
+			if object_within_reach(player.player_unit, pinged_ammo, 3.5) then
 				player_near_ammo = true
 			end
 		end
@@ -183,8 +189,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 			return false
 		end
 		
-		local distance = distance_from_object(self_unit, pinged_ammo)
-		if distance and distance > 5.5 then 
+		if not object_within_reach(self_unit, pinged_ammo, 5.5) then
 			return false 
 		end
 
@@ -210,8 +215,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 			end
 		end
 
-		local distance = distance_from_object(self_unit, pinged_ammo_small)
-		if distance and distance > 5.5 then
+		if not object_within_reach(self_unit, pinged_ammo_small, 5.5) then
 			return false 
 		end
 
