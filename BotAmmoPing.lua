@@ -1,4 +1,4 @@
-local mod_name = BotAmmoPing
+local mod_name = "BotAmmoPing"
 -- Mod to accompany Bot Improvements Mod, this mod will make bots interact with pinged ammo crates in a more timely manner.
 --      It will also make them able to loot small ammo if all players are currently full.
 
@@ -43,7 +43,6 @@ end
 --- options
 local function create_options()
 	Mods.option_menu:add_group("bot_ammo","Bots Ammo Improvements")
-
 	Mods.option_menu:add_item("bot_ammo", OPTIONS.LOOT_AMMO_CRATE, true)
 	Mods.option_menu:add_item("bot_ammo", OPTIONS.LOOT_AMMO_SMALL, true)
 end
@@ -88,7 +87,7 @@ end
     ammo we want (it gives the 'raw' max ammo for the weapon type without the Ammo Holder trait).
 	Taken from AmmoMeters.lua in QoL.
 	
-	Modified to fetch inventory and bot status from unit. Also do not return info if player is waiting for respawn 
+	Modified to fetch inventory and bot status from unit. Also do not return info if player is waiting for respawn
 --]]
 local function current_ammo_status(player_unit)
 	local inventory_ext = ScriptUnit.has_extension(player_unit, "inventory_system")
@@ -134,8 +133,8 @@ local function object_within_reach(player_unit, object, distance)
 		local object_dist = Vector3.distance(player_pos, object_pos)
 		if distance and distance < object_dist then
 			return true
+		end
 	end
-end
 
 	return false
 end
@@ -156,11 +155,10 @@ local pinged_ammo
 local pinged_ammo_small
 function BTConditions.can_loot_pinged_ammo(blackboard)
 	
-    -- Avoids possible crash
+	-- Avoids possible crash
 	if blackboard.unit == nil or not blackboard.inventory_extension then
 		return false
 	end
-	
 	local self_unit = blackboard.unit
 
 	-- If bot is been attacked
@@ -169,10 +167,9 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 			return false
 		end
 	end
-	
+
 	if pinged_ammo then -- Ammo Crates
 		local player_near_ammo = false
-		local players_full_ammo = true
 		for id, player in pairs(Managers.player:human_players()) do
 			--local distance = distance_from_object(player.player_unit, pinged_ammo)
 			--if player and distance and 3.5 > distance then
@@ -181,7 +178,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 			end
 		end
 
-		if not player_near_ammo then 
+		if not player_near_ammo then
 			return false
 		end
 
@@ -190,7 +187,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 		end
 		
 		if not object_within_reach(self_unit, pinged_ammo, 5.5) then
-			return false 
+			return false
 		end
 
 		blackboard.interaction_unit = pinged_ammo
@@ -205,7 +202,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 
 		local curr_ammo, max_ammo = current_ammo_status(self_unit)
 		if not curr_ammo or not max_ammo then
-			return false 
+			return false
 		end
 
 		-- Do not let bot loot ammo if a player could use it
@@ -216,7 +213,7 @@ function BTConditions.can_loot_pinged_ammo(blackboard)
 		end
 
 		if not object_within_reach(self_unit, pinged_ammo_small, 5.5) then
-			return false 
+			return false
 		end
 
 		local ammo_perc = curr_ammo/max_ammo
@@ -243,10 +240,8 @@ insert_bt_node({
 Mods.hook.set(mod_name, "PingTargetExtension.set_pinged", function (func, self, pinged)
     if pinged then
 		local pickup_extension = ScriptUnit.has_extension(self._unit, "pickup_system")
-        local pickup_settings = pickup_extension and pickup_extension:get_pickup_settings()
         
-		if pickup_extension and get(OPTIONS.LOOT_AMMO_CRATE) and 
-				pickup_extension.pickup_name == "all_ammo" then
+		if pickup_extension and get(OPTIONS.LOOT_AMMO_CRATE) and pickup_extension.pickup_name == "all_ammo" then
 			pinged_ammo = self._unit
 		else
 			pinged_ammo = nil
