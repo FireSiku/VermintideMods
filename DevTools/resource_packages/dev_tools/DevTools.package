@@ -1,0 +1,12 @@
+mod =  [
+	"DevTools"
+]
+
+package = [
+	"resource_packages/dev_tools/DevTools"
+]
+
+lua = [
+	"scripts/mods/dev_tools/DevTools"
+	"localization/dev_tools"
+]
