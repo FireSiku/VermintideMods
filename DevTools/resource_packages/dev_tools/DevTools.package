@@ -8,5 +8,5 @@ package = [
 
 lua = [
 	"scripts/mods/dev_tools/DevTools"
-	"localization/dev_tools"
+	"localization/DevTools"
 ]

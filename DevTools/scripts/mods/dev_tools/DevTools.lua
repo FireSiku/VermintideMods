@@ -19,32 +19,78 @@ mod_data.is_mutator = false -- If the mod is mutator
 mod_data.options_widgets = {
 }
 
--- Placeholder until I find a better way to get a path.
-local DEFAULT_PATH = "F:\\Steam\\SteamApps\\common\\Warhammer End Times Vermintide\\binaries\\dev"
+local iter = 1000
+local clock = os.clock
 
--- ##########################################################
--- ############### Local Functions ##########################
-
-local function do_file(...)
-	mod:echo(...)
+local function get_ms(start_time, end_time)
+    local ms = (end_time - start_time) * 1000
+    return string.format("%.3f", ms):gsub("%.?0+$", "")
 end
 
--- ##########################################################
--- #################### Hooks ###############################
+local mods = {}
+for i = 1, 5 do mods[i] = new_mod("HookTestingMod"..i) end
 
-mod:hook("", function (func, ...)
-	
-	-- Original function
-	local result = func(...)
-	return result
-end)
+function A()
+    mod:echo("A Call")
+    return 1
+end
 
--- ##########################################################
--- ################### Callback #############################
+local function hooktest_DeclareGlobal()
+    function NewGlobal()
+        mod:echo("NewGlobal Called")
+        return 1
+    end
 
+    mods[1]:hook("NewGlobal", function(func)
+        mod:echo("Hook")
+        return func()
+    end)
+
+    NewGlobal()
+    --Result: No hook created.
+end
+
+local function hooktest_ModifyReturnParameters()
+    mods[1]:hook("A", function(func)
+        mod:echo("Prehook")
+        return func()
+    end)
+    -- mods[2]:hook("A", function(func)
+    --     mod:echo("Prehook stuff. Dont care about func")
+    --     func()
+    -- end)
+    mods[3]:hook("A", function(func)
+        func()
+        mod:echo("Class Posthook")
+    end)
+    -- mods[4]:hook("A", function(func)
+    --     mod:echo("LateRaw")
+    --     return 3
+    -- end)
+
+    local ret = A()
+    mod:echo("Final Result: %s", ret)
+    --Result: Call, Hook3 returned 1, Final is nil.
+    --Result with Prehook: Hook2 returned nil, Hook3 said it was nil, Final is nil.
+    --Result with Late Raw: Hook4 returned 3. Final is 3.
+    --Result with Early Raw: Hook1 was called. Hook3 said it returned 3. Final result: nil
+end
+
+local function test_hooking()
+    hooktest_ModifyReturnParameters()
+end
+
+local function test_log()
+    mod:echo("Test Echo")
+    mod:warning("Test Warning")
+    mod:error("Test Error")
+    mod:info("Test Info")
+    mod:debug("Test Debug")
+end
 
 -- ##########################################################
 -- ################### Script ###############################
 
 mod:initialize_data(mod_data)
-mod:command("dofile", "Execute an arbitrary file", do_file)
+mod:command("hook", "Test arbitrary stuff", test_hooking)
+mod:command("log", "Test Logging", test_log)
